@@ -1,0 +1,68 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# Cargo lock for libraries is sometimes excluded, but THIS PROJECT IS A
+# BINARY — Cargo.lock IS checked in (reproducible builds for releases).
+# Do not add Cargo.lock here.
+
+# Editor / IDE — keep these out of the repo even if individual contributors
+# prefer different setups.
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS junk
+.AppleDouble
+.LSOverride
+Icon?
+
+# Project runtime state (created by `serve` and `doctor` at $HOME/.azure-support-ticket-mcp,
+# NOT under the repo — but if a contributor accidentally points the app at a
+# repo-local config, ignore the artifacts).
+.azure-support-ticket-mcp/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Test / dev scratch
+/tmp/
+/scratch/
+*.bak
+*.orig
+*.log
+
+# Coverage / profiling
+*.profraw
+*.profdata
+tarpaulin-report.html
+coverage/
+lcov.info
+
+# Secrets — never commit. The .env pattern is belt-and-suspenders; we do not
+# read .env files in code, but a contributor might create one for local
+# convenience.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+azure_credentials.json
+
+# Release-build scratch (not used in CI, but contributors may create them)
+/dist/
+/release/
+
+# macOS Finder metadata
+.fseventsd/
+.Spotlight-V100/
+.Trashes/
+
+notes.md

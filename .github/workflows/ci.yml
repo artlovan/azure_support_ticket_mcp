@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs for the same PR / branch when new commits land.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+
+jobs:
+  versions:
+    name: version sync check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Cargo.toml and plugin.json versions agree
+        run: |
+          set -euo pipefail
+          CARGO_VER=$(grep -E '^version = "' Cargo.toml | head -1 | cut -d'"' -f2)
+          PLUGIN_VER=$(jq -r .version plugin/plugin.json)
+          echo "Cargo.toml=$CARGO_VER  plugin.json=$PLUGIN_VER"
+          if [ "$CARGO_VER" != "$PLUGIN_VER" ]; then
+            echo "::error::Cargo.toml ($CARGO_VER) and plugin/plugin.json ($PLUGIN_VER) versions disagree — bump both in lockstep (see docs/RELEASING.md)"
+            exit 1
+          fi
+
+  test:
+    name: test (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (stable + clippy + rustfmt)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Restore Cargo cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --release --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test --release --all-targets
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    # Don't block the merge if the RustSec advisory DB itself has a hiccup —
+    # audit failures are visible in the Checks tab and surface real CVEs,
+    # but we don't want a transient advisory DB issue to block all merges.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+
+      - name: Run cargo audit
+        run: cargo audit --deny warnings

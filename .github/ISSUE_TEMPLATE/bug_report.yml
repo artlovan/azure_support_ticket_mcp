@@ -1,0 +1,94 @@
+name: Bug report
+description: Something isn't working the way you expect.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out
+        as much of the form as you can — the more detail, the faster we
+        can help.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug.
+      placeholder: When I run `azure-support-ticket-mcp doctor`, it ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: I expected ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands or MCP prompts that trigger the bug.
+      placeholder: |
+        1. `azure-support-ticket-mcp serve` (or via Copilot CLI)
+        2. Send prompt: "open a ticket for ..."
+        3. See error: ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `azure-support-ticket-mcp --version`.
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system + arch
+      placeholder: e.g. macOS 14.5 (arm64), Ubuntu 24.04 (x86_64), Windows 11 (x86_64)
+    validations:
+      required: true
+
+  - type: input
+    id: install-method
+    attributes:
+      label: How was the binary installed?
+      placeholder: install.sh / install.ps1 / cargo install --path . / built from source
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `azure-support-ticket-mcp doctor`
+      description: Paste the full output. Redact any tenant IDs, subscription IDs, or paths you don't want public.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Run with `RUST_LOG=azure_support_ticket_mcp=debug` for more detail.
+        Please redact any access tokens, secrets, or contact details before posting.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: search
+    attributes:
+      label: Before submitting
+      options:
+        - label: I've searched existing issues and this hasn't been reported.
+          required: true
+        - label: I've removed any secrets, tokens, or personal contact info from logs and screenshots.
+          required: true

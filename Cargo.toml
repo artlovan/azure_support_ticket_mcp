@@ -1,0 +1,61 @@
+[package]
+name = "azure-support-ticket-mcp"
+version = "0.1.0"
+edition = "2021"
+description = "MCP server that guides users through Azure support ticket workflows"
+license = "MIT"
+authors = ["Artem Lovan"]
+repository = "https://github.com/artlovan/azure_support_ticket_mcp"
+homepage = "https://github.com/artlovan/azure_support_ticket_mcp"
+readme = "README.md"
+keywords = ["azure", "support", "ticket", "mcp", "copilot"]
+categories = ["command-line-utilities", "development-tools"]
+publish = false
+
+[[bin]]
+name = "azure-support-ticket-mcp"
+path = "src/main.rs"
+
+[lib]
+name = "azure_support_ticket_mcp"
+path = "src/lib.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "signal", "time", "io-std", "process"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "gzip"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "sqlite", "macros", "migrate"] }
+uuid = { version = "1", features = ["v4", "v7"] }
+time = { version = "0.3", features = ["serde-well-known", "macros"] }
+toml = "0.8"
+dirs = "5"
+which = "6"
+url = "2"
+regex = "1"
+sha2 = "0.10"
+base64 = "0.22"
+async-trait = "0.1"
+clap = { version = "4", features = ["derive"] }
+rmcp = { version = "1.7", default-features = false, features = ["server", "macros", "transport-io", "schemars"] }
+schemars = "1"
+once_cell = "1"
+parking_lot = "0.12"
+urlencoding = "2.1.3"
+
+[dev-dependencies]
+wiremock = "0.6"
+tempfile = "3"
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+[profile.dev]
+opt-level = 0
