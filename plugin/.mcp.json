@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "azure-support-ticket-mcp": {
+      "command": "azure-support-ticket-mcp",
+      "args": ["serve"]
+    }
+  }
+}

@@ -1,0 +1,63 @@
+name: Feature request
+description: Suggest a new MCP tool, capability, or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please skim `CONTRIBUTING.md` → Scope and
+        `docs/ROADMAP.md` to see whether the feature fits the project's
+        goals and whether it's already planned.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: The user-facing pain point, not the proposed solution.
+      placeholder: |
+        When I do X, I have to manually do Y because the MCP doesn't
+        currently support Z.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like the MCP to do?
+      placeholder: |
+        A new tool `<tool_name>` that ...
+        OR: extend `<existing_tool>` to also ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you've thought about, and why you'd pick this one.
+      placeholder: I considered ... but it would ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example user flow
+      description: A concrete prompt or command sequence showing the new feature in use.
+      placeholder: |
+        User: "open a quota increase ticket for my Azure OpenAI deployment"
+        MCP: ...
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: I've read CONTRIBUTING.md → Scope and this fits the project's stated goals.
+          required: true
+        - label: I've checked docs/ROADMAP.md and this isn't already planned.
+          required: true

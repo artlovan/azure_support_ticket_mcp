@@ -1,0 +1,21 @@
+{
+  "name": "azure-support-ticket-mcp",
+  "description": "Open and manage Azure support tickets from Copilot CLI without leaving the terminal. Wraps the azure-support-ticket-mcp binary (a stdio MCP server written in Rust) so users can install + register it with a single `copilot plugin install` command. The binary must be installed separately via the project's install script — this plugin only ships the launcher config.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Artem Lovan",
+    "url": "https://github.com/artlovan"
+  },
+  "homepage": "https://github.com/artlovan/azure_support_ticket_mcp",
+  "repository": "https://github.com/artlovan/azure_support_ticket_mcp",
+  "license": "MIT",
+  "keywords": [
+    "azure",
+    "support",
+    "ticket",
+    "mcp",
+    "copilot"
+  ],
+  "category": "azure",
+  "mcpServers": ".mcp.json"
+}
