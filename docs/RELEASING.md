@@ -73,6 +73,18 @@ until the first `1.0.0`.
 
 ## Cutting a release
 
+> **The version contract.** Every release is identified by exactly one version
+> string that must appear identically in **three places**:
+>
+> 1. `Cargo.toml` → `version = "X.Y.Z"`
+> 2. `plugin/plugin.json` → `"version": "X.Y.Z"`
+> 3. The git tag pushed to GitHub → `vX.Y.Z` (with the `v` prefix)
+>
+> CI enforces this two ways:
+> - `ci.yml` fails any PR where (1) and (2) disagree.
+> - `release.yml` fails fast if the pushed tag doesn't match (1) and (2) —
+>   the build matrix won't even start. You cannot ship a mismatched release.
+
 1. **Land all work in `main`.** Every release ships exclusively from `main`
    — no release branches in v1.
 
@@ -87,15 +99,10 @@ until the first `1.0.0`.
    prints them), then land that change as its own PR before the release
    PR. See [`data/README.md`](../data/README.md) for the full procedure.
 
-3. **Bump `version` in `Cargo.toml` AND in `plugin/plugin.json`.** Both
-   must match the tag you're about to push. The plugin version tracks the
-   binary version 1:1 so users can see at a glance which release they
+3. **Bump `version` in `Cargo.toml` AND in `plugin/plugin.json`** to the
+   same value (see the version contract above). The plugin version tracks
+   the binary version 1:1 so users can see at a glance which release they
    have installed (`copilot plugin list`).
-
-   > CI enforces this. `ci.yml` fails any PR where the two versions
-   > disagree; `release.yml` fails fast if the pushed tag doesn't match
-   > `Cargo.toml` (the build matrix won't even start). You can't ship a
-   > mismatched release.
 
 4. **Open a PR titled `Release v1.2.3`** containing only the `Cargo.toml`
    + `plugin/plugin.json` version bumps. Merge once CI is green.
