@@ -1,5 +1,10 @@
 # azure-support-ticket-mcp
 
+[![CI](https://github.com/artlovan/azure_support_ticket_mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/artlovan/azure_support_ticket_mcp/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/artlovan/azure_support_ticket_mcp?sort=semver)](https://github.com/artlovan/azure_support_ticket_mcp/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/artlovan/azure_support_ticket_mcp)](./LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20macos%20%7C%20windows-blue)](https://github.com/artlovan/azure_support_ticket_mcp/releases/latest)
+
 Opening an Azure support ticket should take seconds, not minutes. **azure-support-ticket-mcp** is a fast, local MCP server that turns the full ticket lifecycle into a guided conversation — no portal, no context switch, no re-typing the resource ID Azure already knows about.
 
 ---

@@ -1,0 +1,28 @@
+# cargo-audit configuration.
+#
+# We deliberately ignore advisories here only when the vulnerable code path
+# is provably unreachable in our compiled binary. Every entry must be
+# accompanied by a comment explaining WHY it is safe to ignore, so a future
+# maintainer can audit our reasoning rather than rubber-stamp it.
+
+[advisories]
+ignore = [
+    # RUSTSEC-2023-0071 — Marvin Attack: potential RSA key recovery via
+    # timing sidechannel in the `rsa` crate (no upstream fix released).
+    #
+    # Reachability analysis:
+    #   rsa  <- sqlx-mysql  <- sqlx  <- azure-support-ticket-mcp
+    #
+    # We pull in sqlx with `default-features = false` and only the
+    # "sqlite" backend enabled (see Cargo.toml). The mysql backend
+    # (and therefore the `rsa` crate) is never compiled into the
+    # binary. cargo-audit scans Cargo.lock, which contains every
+    # *possible* transitive dependency regardless of feature flags,
+    # so it flags this even though our build can't reach it.
+    #
+    # Re-evaluate this exception when:
+    #   - the `rsa` crate releases a fixed version (drop the ignore), OR
+    #   - we add MySQL support to sqlx features (must remove the ignore
+    #     and find an alternative — at that point the CVE is reachable).
+    "RUSTSEC-2023-0071",
+]
