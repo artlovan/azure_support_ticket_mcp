@@ -1,6 +1,6 @@
 [package]
 name = "azure-support-ticket-mcp"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "MCP server that guides users through Azure support ticket workflows"
 license = "MIT"
