@@ -61,7 +61,7 @@ impl ToolsServer {
     /// Report auth + cloud + seed + cache freshness.
     #[tool(
         name = "azure_auth_status",
-        description = "Report Azure auth configuration, cloud, seed version, and cache freshness. Does not call Azure."
+        description = "Report Azure auth configuration and the active Azure CLI tenant/subscription context (read locally; no network call unless probe_token is set). Pass {\"probe_token\": true} to additionally verify a token can be acquired."
     )]
     async fn azure_auth_status(
         &self,

@@ -235,10 +235,7 @@ impl AuthProvider for AzureCliTokenProvider {
         if !out.status.success() {
             let stderr = String::from_utf8_lossy(&out.stderr);
             warn!(stderr = %stderr, "az get-access-token failed");
-            return Err(AppError::Auth(format!(
-                "az get-access-token failed: {}",
-                stderr.lines().next().unwrap_or(stderr.as_ref())
-            )));
+            return Err(AppError::Auth(az_token_error_message(&stderr)));
         }
 
         let parsed: AzCliToken = serde_json::from_slice(&out.stdout)
@@ -303,4 +300,136 @@ pub fn build_default_chain(allow_az_cli_fallback: bool) -> AppResult<ChainedAuth
         ));
     }
     Ok(ChainedAuthProvider::new(chain))
+}
+
+// -----------------------------------------------------------------------
+// Actionable error messages
+// -----------------------------------------------------------------------
+
+/// Build an actionable error message from a failed `az account get-access-token`
+/// invocation. Any such failure (not logged in, MSAL token-cache miss, wrong
+/// active subscription) is fixable by re-authenticating and/or selecting the
+/// right subscription, so we always append concrete remediation steps rather
+/// than echoing the raw (often cryptic) CLI output on its own.
+fn az_token_error_message(stderr: &str) -> String {
+    let first = stderr
+        .lines()
+        .map(str::trim)
+        .find(|l| !l.is_empty())
+        .unwrap_or("az get-access-token failed");
+    format!(
+        "Azure CLI could not provide a token ({first}). Run `az login` to sign in, \
+         then `az account set --subscription <id>` to select the correct \
+         tenant/subscription, and retry."
+    )
+}
+
+// -----------------------------------------------------------------------
+// Local az CLI context (no network): `az account show`
+// -----------------------------------------------------------------------
+
+/// The Azure CLI's currently-active account context, read from the local
+/// on-disk profile via `az account show`. Used to disclose which tenant and
+/// subscription the CLI fallback would act in, without acquiring a token.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AzActiveAccount {
+    pub tenant_id: Option<String>,
+    pub subscription_id: Option<String>,
+    pub subscription_name: Option<String>,
+    pub user: Option<String>,
+}
+
+/// Pure parse of `az account show --output json` output. Returns `None` when
+/// the JSON is unparseable or carries neither a tenant nor a subscription.
+pub fn parse_az_account_show(json: &[u8]) -> Option<AzActiveAccount> {
+    let v: serde_json::Value = serde_json::from_slice(json).ok()?;
+    let s = |k: &str| v.get(k).and_then(|x| x.as_str()).map(str::to_string);
+    let acct = AzActiveAccount {
+        tenant_id: s("tenantId"),
+        subscription_id: s("id"),
+        subscription_name: s("name"),
+        user: v
+            .get("user")
+            .and_then(|u| u.get("name"))
+            .and_then(|x| x.as_str())
+            .map(str::to_string),
+    };
+    if acct.tenant_id.is_none() && acct.subscription_id.is_none() {
+        return None;
+    }
+    Some(acct)
+}
+
+/// Read the active az CLI account context. Local-only: reads the on-disk az
+/// profile and does not touch the network. Returns `None` when `az` is absent,
+/// not logged in, or the output cannot be parsed.
+pub async fn az_active_account() -> Option<AzActiveAccount> {
+    if which::which("az").is_err() {
+        return None;
+    }
+    let out = Command::new("az")
+        .args(["account", "show", "--output", "json"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .await
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    parse_az_account_show(&out.stdout)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn az_token_error_is_actionable() {
+        let msg = az_token_error_message(
+            "ERROR: Please run 'az login' to setup account.\ntrailing noise",
+        );
+        assert!(msg.contains("az login"));
+        assert!(msg.contains("az account set --subscription"));
+        // Surfaces the original first line for context.
+        assert!(msg.contains("Please run 'az login' to setup account."));
+    }
+
+    #[test]
+    fn az_token_error_handles_empty_stderr() {
+        let msg = az_token_error_message("   \n\n");
+        assert!(msg.contains("az get-access-token failed"));
+        assert!(msg.contains("az login"));
+    }
+
+    #[test]
+    fn parse_az_account_show_extracts_context() {
+        let json = br#"{
+            "environmentName": "AzureCloud",
+            "id": "00000000-0000-0000-0000-000000000001",
+            "isDefault": true,
+            "name": "My Subscription",
+            "state": "Enabled",
+            "tenantId": "11111111-1111-1111-1111-111111111111",
+            "user": { "name": "tester@contoso.com", "type": "user" }
+        }"#;
+        let acct = parse_az_account_show(json).expect("should parse");
+        assert_eq!(
+            acct.tenant_id.as_deref(),
+            Some("11111111-1111-1111-1111-111111111111")
+        );
+        assert_eq!(
+            acct.subscription_id.as_deref(),
+            Some("00000000-0000-0000-0000-000000000001")
+        );
+        assert_eq!(acct.subscription_name.as_deref(), Some("My Subscription"));
+        assert_eq!(acct.user.as_deref(), Some("tester@contoso.com"));
+    }
+
+    #[test]
+    fn parse_az_account_show_rejects_empty_or_garbage() {
+        assert!(parse_az_account_show(b"{}").is_none());
+        assert!(parse_az_account_show(b"not json").is_none());
+    }
 }
