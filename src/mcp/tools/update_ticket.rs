@@ -73,11 +73,13 @@ pub struct Output {
     /// "preview" on the first call, "applied" after a successful PATCH.
     pub phase: String,
     pub ticket_name: String,
+    #[schemars(schema_with = "crate::mcp::schema::any_json_schema")]
     pub patch_properties: Value,
     pub review_token: Option<String>,
     pub draft_hash: Option<String>,
     /// Updated ticket body (only when phase == "applied").
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(schema_with = "crate::mcp::schema::any_json_schema")]
     pub updated: Option<Value>,
     /// Preformatted markdown for the preview phase — render verbatim. Avoids
     /// the literal `\n` glitch from assistants hand-building prompts.

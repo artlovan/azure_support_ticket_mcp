@@ -42,10 +42,12 @@ pub struct Output {
     pub phase: String,
     pub ticket_name: String,
     pub communication_name: String,
+    #[schemars(schema_with = "crate::mcp::schema::any_json_schema")]
     pub intent: Value,
     pub review_token: Option<String>,
     pub draft_hash: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(schema_with = "crate::mcp::schema::any_json_schema")]
     pub created: Option<Value>,
     /// Preformatted markdown to render verbatim during the preview phase. Use
     /// this instead of building your own question — embedded literal `\n`

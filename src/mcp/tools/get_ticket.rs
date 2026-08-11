@@ -32,6 +32,7 @@ fn default_max_age() -> i64 {
 #[derive(Debug, Serialize, JsonSchema)]
 pub struct Output {
     pub ticket_name: String,
+    #[schemars(schema_with = "crate::mcp::schema::any_json_schema")]
     pub raw: serde_json::Value,
     /// True if served from local cache rather than Azure.
     pub from_cache: bool,
