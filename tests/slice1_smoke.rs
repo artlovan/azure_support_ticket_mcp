@@ -148,3 +148,47 @@ fn slice1_handshake_and_tools() {
 
     srv.shutdown();
 }
+
+#[test]
+fn output_schema_dynamic_json_properties_are_schema_objects() {
+    let tmp = tempfile::tempdir().expect("tmpdir");
+    let mut srv = Server::spawn(tmp.path());
+
+    srv.send(&json!({
+        "jsonrpc": "2.0", "id": 1, "method": "initialize",
+        "params": {"protocolVersion": "2024-11-05", "capabilities": {},
+                   "clientInfo": {"name": "schema-it", "version": "0"}}
+    }));
+    let init = srv.next_response(1);
+    assert!(init["result"]["serverInfo"]["name"].is_string());
+
+    srv.send(&json!({"jsonrpc": "2.0", "method": "notifications/initialized"}));
+    srv.send(&json!({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}));
+    let tools = srv.next_response(2);
+
+    for (tool_name, property_name) in [
+        ("create_support_ticket", "raw"),
+        ("get_support_ticket", "raw"),
+        ("reply_to_ticket", "created"),
+        ("reply_to_ticket", "intent"),
+        ("update_support_ticket", "patch_properties"),
+        ("update_support_ticket", "updated"),
+    ] {
+        let property_schema = tools["result"]["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["name"] == tool_name)
+            .and_then(|t| {
+                t["outputSchema"]["properties"][property_name]
+                    .as_object()
+                    .map(|_| &t["outputSchema"]["properties"][property_name])
+            });
+        assert!(
+            property_schema.is_some(),
+            "{tool_name}.outputSchema.properties.{property_name} must be a schema object"
+        );
+    }
+
+    srv.shutdown();
+}

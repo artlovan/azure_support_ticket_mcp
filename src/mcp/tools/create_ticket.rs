@@ -60,6 +60,7 @@ pub struct Output {
     pub support_ticket_id: Option<String>,
     pub portal_url: String,
     pub share_markdown: String,
+    #[schemars(schema_with = "crate::mcp::schema::any_json_schema")]
     pub raw: serde_json::Value,
 }
 
